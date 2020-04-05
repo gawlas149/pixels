@@ -16,7 +16,7 @@ function startServer() {
     const color = req.params.color;
     const index = parseInt(req.params.index);
     if (/^[0-9A-F]{6}$/i.test(color) === false || index < 0 || index > 1023) {
-      res.send("KUPA");
+      res.sendStatus(400);
       return;
     }
 
@@ -27,7 +27,8 @@ function startServer() {
 
     const data = JSON.stringify(db);
     fs.writeFileSync("db", data);
-    res.send(data);
+
+    res.sendStatus(200);
   });
 
   app.listen(port, () =>
