@@ -6,6 +6,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(express.static("app"));
 
 function startServer() {
   app.get("/db", (req, res) => {

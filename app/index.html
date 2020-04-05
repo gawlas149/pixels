@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: block;
+      }
+      .pixel {
+        width: 3.125%;
+        height: 3.125%;
+        float: left;
+      }
+    </style>
+  </head>
+  <body>
+    <input
+      id="colorPicker"
+      style="position: absolute;"
+      type="color"
+      value="#7515c4"
+      onchange="updateInput()"
+    />
+    <script>
+      const url = "https://fathomless-plains-73871.herokuapp.com";
+      let index;
+      let color = "7515c4"; //"ffffff"
+
+      function updateInput() {
+        color = document.getElementById("colorPicker").value.substring(1);
+        console.log(color);
+      }
+
+      function change(index) {
+        fetch(`${url}/db/add/${index}/${color}`).then((response) => {
+          return response.json();
+        });
+      }
+
+      function read() {
+        fetch(`${url}/db`)
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            for (let i = 0; i < 1024; i++) {
+              pixels[i].style.backgroundColor = "#" + data[i];
+            }
+          });
+      }
+
+      for (let i = 0; i < 1024; i++) {
+        document.body.innerHTML += "<div class='pixel'></div>";
+      }
+
+      const pixels = document.getElementsByClassName("pixel");
+      let mouseDown = 0;
+      document.body.onmousedown = function () {
+        mouseDown = 1;
+      };
+      document.body.onmouseup = function () {
+        mouseDown = 0;
+      };
+
+      for (let i = 0; i < 1024; i++) {
+        pixels[i].onmousedown = function () {
+          pixels[i].style.backgroundColor = color;
+          change(i);
+        };
+        pixels[i].onmouseover = function () {
+          if (mouseDown == 1) {
+            pixels[i].style.backgroundColor = color;
+            change(i);
+          }
+        };
+      }
+      read();
+
+      setInterval(function () {
+        read();
+      }, 1000);
+    </script>
+  </body>
+</html>
