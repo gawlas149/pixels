@@ -8,6 +8,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.static("app"));
 
+const size = 3025;
+
 function startServer() {
   let clients = [];
 
@@ -18,7 +20,7 @@ function startServer() {
   app.get("/db/add/:index/:color", (req, res) => {
     const color = req.params.color;
     const index = parseInt(req.params.index);
-    if (/^[0-9A-F]{6}$/i.test(color) === false || index < 0 || index > 1023) {
+    if (/^[0-9A-F]{6}$/i.test(color) === false || index < 0 || index > 3024) {
       res.sendStatus(400);
       return;
     }
