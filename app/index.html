@@ -3,10 +3,6 @@
     <style>
       * {
         margin: 0;
-        padding: 0;
-      }
-      body {
-        display: block;
       }
       .pixel {
         width: 3.125%;
@@ -34,9 +30,7 @@
       }
 
       function change(index) {
-        fetch(`${url}/db/add/${index}/${color}`).then((response) => {
-          return response.json();
-        });
+        fetch(`${url}/db/add/${index}/${color}`);
       }
 
       function read() {
@@ -76,11 +70,14 @@
           }
         };
       }
-      read();
 
-      setInterval(function () {
-        read();
-      }, 1000);
+      const events = new EventSource(url + "/db/test");
+      events.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        pixels[data.index].style.backgroundColor = "#" + data.color;
+      };
+
+      read();
     </script>
   </body>
 </html>
