@@ -5,8 +5,8 @@
         margin: 0;
       }
       .pixel {
-        width: 1.81%;
-        height: 1.81%;
+        width: 1.8181818%;
+        height: 1.8181818%;
         float: left;
       }
     </style>
@@ -22,7 +22,7 @@
     <script>
       const url = "https://fathomless-plains-73871.herokuapp.com";
       let index;
-      let color = "7515c4"; //"ffffff"
+      let color = "7515c4";
       const size = 3025;
 
       function updateInput() {
@@ -77,6 +77,8 @@
         const data = JSON.parse(event.data);
         pixels[data.index].style.backgroundColor = "#" + data.color;
       };
+      // events.addEventListener("draw",(event)=>{})
+      // events.addEventListener("cursor",(event)=>{})
 
       read();
     </script>
