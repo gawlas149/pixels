@@ -37,11 +37,13 @@ function startServer() {
 
     const event = { color, index };
     for (let i = 0; i < clients.length; i++) {
-      clients[i].res.write(`data: ${JSON.stringify(event)}\n\n`);
+      const res = clients[i].res;
+      res.write("event: draw\n");
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
     }
   });
 
-  app.get("/db/test", (req, res) => {
+  app.get("/db/events/:id", (req, res) => {
     const headers = {
       "Content-Type": "text/event-stream",
       Connection: "keep-alive",
@@ -49,7 +51,7 @@ function startServer() {
     };
     res.writeHead(200, headers);
 
-    const clientId = Date.now();
+    const clientId = req.params.id;
     const newClient = {
       id: clientId,
       res,
@@ -58,9 +60,47 @@ function startServer() {
 
     req.on("close", () => {
       clients = clients.filter((c) => c.id !== clientId);
+      const event = { id: clientId };
+      for (let i = 0; i < clients.length; i++) {
+        const res = clients[i].res;
+        res.write("event: cursorDel\n");
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+      }
     });
   });
 
+  app.get("/cursors/:id/:posX/:posY", (req, res) => {
+    res.sendStatus(200);
+    const id = req.params.id;
+    const posX = req.params.posX;
+    const posY = req.params.posY;
+
+    const event = { id, posX, posY };
+    for (let i = 0; i < clients.length; i++) {
+      if (clients[i].id == id) {
+        continue;
+      }
+      const res = clients[i].res;
+      res.write("event: cursor\n");
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    }
+  });
+
+  app.get("/cursorColor/:id/:color", (req, res) => {
+    res.sendStatus(200);
+    const id = req.params.id;
+    const color = req.params.color;
+
+    const event = { id, color };
+    for (let i = 0; i < clients.length; i++) {
+      if (clients[i].id == id) {
+        continue;
+      }
+      const res = clients[i].res;
+      res.write("event: cursorColor\n");
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    }
+  });
   app.listen(port, () =>
     console.log(`Example app listening at http://localhost:${port}`)
   );

@@ -9,6 +9,13 @@
         height: 1.8181818%;
         float: left;
       }
+      .cursor {
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        border: 1px solid black;
+      }
     </style>
   </head>
   <body>
@@ -21,13 +28,16 @@
     />
     <script>
       const url = "https://fathomless-plains-73871.herokuapp.com";
+      // const url = "http://localhost:3000";
       let index;
       let color = "7515c4";
       const size = 3025;
+      // const size = 1024;
+      const id = Date.now();
 
       function updateInput() {
         color = document.getElementById("colorPicker").value.substring(1);
-        console.log(color);
+        fetch(`${url}/cursorColor/${id}/${color}`);
       }
 
       function change(index) {
@@ -72,13 +82,51 @@
         };
       }
 
-      const events = new EventSource(url + "/db/test");
-      events.onmessage = (event) => {
+      const events = new EventSource(url + `/db/events/${id}`);
+      events.addEventListener("draw", (event) => {
         const data = JSON.parse(event.data);
         pixels[data.index].style.backgroundColor = "#" + data.color;
-      };
-      // events.addEventListener("draw",(event)=>{})
-      // events.addEventListener("cursor",(event)=>{})
+      });
+
+      document.addEventListener("mousemove", (event) => {
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+
+        const posX = (100 * event.clientX) / ww;
+        const posY = (100 * event.clientY) / wh;
+
+        fetch(`${url}/cursors/${id}/${posX}/${posY}`);
+      });
+
+      const cursors = {};
+      events.addEventListener("cursor", (event) => {
+        //{posX,posY,id}
+        const data = JSON.parse(event.data);
+        if (!cursors[data.id]) {
+          const el = document.createElement("div");
+          el.style.backgroundColor = "#" + color;
+          el.classList.add("cursor");
+          cursors[data.id] = el;
+          document.body.appendChild(el);
+        }
+        const el = cursors[data.id];
+        el.style.left = data.posX + "%";
+        el.style.top = data.posY + "%";
+      });
+
+      events.addEventListener("cursorDel", (event) => {
+        const data = JSON.parse(event.data);
+        if (cursors[data.id]) {
+          document.body.removeChild(cursors[data.id]);
+        }
+      });
+
+      events.addEventListener("cursorColor", (event) => {
+        const data = JSON.parse(event.data);
+        if (cursors[data.id]) {
+          cursors[data.id].style.backgroundColor = "#" + data.color;
+        }
+      });
 
       read();
     </script>
