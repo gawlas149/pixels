@@ -15,6 +15,7 @@
         height: 25px;
         border-radius: 50%;
         border: 1px solid black;
+        transition: all 100ms;
       }
     </style>
   </head>
@@ -88,7 +89,19 @@
         pixels[data.index].style.backgroundColor = "#" + data.color;
       });
 
-      document.addEventListener("mousemove", (event) => {
+      const throttle = (func, limit) => {
+        let inThrottle;
+        return function () {
+          const args = arguments;
+          const context = this;
+          if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => (inThrottle = false), limit);
+          }
+        };
+      };
+      const onMouseMove = (event) => {
         const ww = window.innerWidth;
         const wh = window.innerHeight;
 
@@ -96,7 +109,9 @@
         const posY = (100 * event.clientY) / wh;
 
         fetch(`${url}/cursors/${id}/${posX}/${posY}`);
-      });
+      };
+
+      document.addEventListener("mousemove", throttle(onMouseMove, 100));
 
       const cursors = {};
       events.addEventListener("cursor", (event) => {
