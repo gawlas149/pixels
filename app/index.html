@@ -4,6 +4,10 @@
       * {
         margin: 0;
       }
+      #colorPicker {
+        position: absolute;
+        z-index: 99999;
+      }
       .pixel {
         width: 1.8181818%;
         height: 1.8181818%;
@@ -22,7 +26,6 @@
   <body>
     <input
       id="colorPicker"
-      style="position: absolute;"
       type="color"
       value="#7515c4"
       onchange="updateInput()"
@@ -56,7 +59,28 @@
             }
           });
       }
+      function readCursors() {
+        fetch(`${url}/cursors`)
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            for (let k in data) {
+              if (k == id) {
+                continue;
+              }
+              const cursor = data[k];
 
+              const el = document.createElement("div");
+              el.style.backgroundColor = "#" + cursor.color;
+              el.style.left = cursor.posX + "%";
+              el.style.top = cursor.posY + "%";
+              el.classList.add("cursor");
+              cursors[k] = el;
+              document.body.appendChild(el);
+            }
+          });
+      }
       for (let i = 0; i < size; i++) {
         document.body.innerHTML += "<div class='pixel'></div>";
       }
@@ -119,10 +143,19 @@
         const data = JSON.parse(event.data);
         if (!cursors[data.id]) {
           const el = document.createElement("div");
-          el.style.backgroundColor = "#" + color;
+
           el.classList.add("cursor");
           cursors[data.id] = el;
           document.body.appendChild(el);
+
+          fetch(`${url}/cursors/${data.id}`)
+            .then((response) => {
+              return response.json();
+            })
+            .then((cursor) => {
+              const el = cursors[data.id];
+              el.style.backgroundColor = "#" + cursor.color;
+            });
         }
         const el = cursors[data.id];
         el.style.left = data.posX + "%";
@@ -144,6 +177,7 @@
       });
 
       read();
+      readCursors();
     </script>
   </body>
 </html>

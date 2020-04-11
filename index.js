@@ -12,7 +12,7 @@ const size = 3025;
 
 function startServer() {
   let clients = [];
-
+  const cursors = {};
   app.get("/db", (req, res) => {
     const file = fs.readFileSync("db");
     res.send(file.toString());
@@ -57,8 +57,10 @@ function startServer() {
       res,
     };
     clients.push(newClient);
+    cursors[clientId] = { posX: 0, posY: 0, color: "7515c4" };
 
     req.on("close", () => {
+      delete cursors[clientId];
       clients = clients.filter((c) => c.id !== clientId);
       const event = { id: clientId };
       for (let i = 0; i < clients.length; i++) {
@@ -75,6 +77,11 @@ function startServer() {
     const posX = req.params.posX;
     const posY = req.params.posY;
 
+    if (cursors[id]) {
+      cursors[id].posX = posX;
+      cursors[id].posY = posY;
+    }
+
     const event = { id, posX, posY };
     for (let i = 0; i < clients.length; i++) {
       if (clients[i].id == id) {
@@ -86,10 +93,17 @@ function startServer() {
     }
   });
 
+  app.get("/cursors/:id", (req, res) => {
+    const cursor = cursors[req.params.id];
+    res.send(JSON.stringify(cursor));
+  });
+
   app.get("/cursorColor/:id/:color", (req, res) => {
     res.sendStatus(200);
     const id = req.params.id;
     const color = req.params.color;
+
+    cursors[id].color = color;
 
     const event = { id, color };
     for (let i = 0; i < clients.length; i++) {
@@ -101,6 +115,11 @@ function startServer() {
       res.write(`data: ${JSON.stringify(event)}\n\n`);
     }
   });
+
+  app.get("/cursors", (req, res) => {
+    res.send(JSON.stringify(cursors));
+  });
+
   app.listen(port, () =>
     console.log(`Example app listening at http://localhost:${port}`)
   );
