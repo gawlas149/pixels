@@ -1,4 +1,4 @@
-# pixels
+pixels (2019)
 Application based on javascript and node.js.
 
 This app alows multiple players to draw on website (Paint style).
